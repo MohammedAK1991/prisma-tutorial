@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int    @id            @default(autoincrement())
+  email String @unique
+  name  String @map("first_name")
+  role  Role @default(USER)
+  profileId Int? @unique
+  profile Profile? @relation(fields:[profileId], references: [id])
+  posts Post[]
+
+  @@map("users")
+  @@index([name,email])
+}
+
+enum Role {
+  ADMIN
+  USER
+  GUEST
+}
+
+model Profile {
+  id       Int   @id       @default(autoincrement())
+  // userId   Int
+  user User? //@relation(fields: [userId], references: [id])
+  bio      String?
+  location String?
+  avatar   String?
+
+  @@map("profiles")
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  title  String
+  content String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  published Boolean @default(false)
+  authorId Int
+  author User @relation(fields: [authorId], references: [id])
+  categories Category[]
+  likeNum Int @default(0)
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String
+  posts Post[]
+}
+
+// model User {
+//   firstname String
+//   secondname String
+//   profile Profile?
+
+//   @@id([firstname, secondname])
+// }
+
+// model Profile {
+//   id Int @id
+//   userFirstName String
+//   userLastName String
+//   user User @relation(fields:[userFirstName, userLastName], references: [firstname, secondname])
+
+//   @@unique([userFirstName, userLastName])
+
+// }
